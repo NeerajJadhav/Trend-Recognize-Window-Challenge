@@ -18,76 +18,100 @@ public class TrendRecog {
         this.WindowResults = new ArrayList<>();
     }
 
+    /**
+     * Generates Trend value for each of the window sized sub-sequence.
+     */
     private void generatePattern() {
         double length = CostArray.size();
         for (Integer i = 0; i <= length - WindowSize_K; i++) {
-            List<Double> tempList = CostArray.subList(i,i+ (int)WindowSize_K);
-            WindowResults.add(Trend);
-            Trend = 1;
-        }
-    }
+            double Trend = 0;
+            List<Double> tempList = CostArray.subList(i, i + (int) WindowSize_K);
+            for (Integer j = 0; j < WindowSize_K; j++) {
+                int k = 2;
+                while (j + k < WindowSize_K + 1) {
+                    List<Double> smallWindow = tempList.subList(j, j + k);
+                    if (increasingSubsequence(smallWindow, 0, 1))
+                        Trend++;
+                    if (decreasingSubsequence(smallWindow, 0, 1))
+                        Trend--;
+                    k++;
+                }
 
-    private int increasingSubsequence(List<Double> sublist){
-        int Trend = 0;
-        for(int j = 0; j < WindowSize_K-1; j++){
-            double current = sublist.get(j);
-            double next = sublist.get(j+1);
-            if (current<next){
-                Trend++;
-            }else{
-                Trend--;
             }
+            WindowResults.add(Trend);
         }
-        return Trend;
     }
 
     /**
+     * Recursive function which checks if the sublist has a inecreasing sub-sequence of elements
+     *
+     * @param sublist List<Double> list to be checked
+     * @param a       int starting index
+     * @param b       int ending index
+     * @return true if list has increasing sub-sequence
+     */
+    private boolean increasingSubsequence(List<Double> sublist, int a, int b) {
+        if (sublist.size() <= b)
+            return true;
+        if (sublist.get(a) < sublist.get(b)) {
+            return increasingSubsequence(sublist, b, b + 1);
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Recursive function which checks if the sublist has a decreasing sub-sequence of elements
+     *
+     * @param sublist List<Double> list to be checked
+     * @param a       int starting index
+     * @param b       int ending index
+     * @return true if list has decreasing sub-sequence
+     */
+    private boolean decreasingSubsequence(List<Double> sublist, int a, int b) {
+        if (sublist.size() <= b)
+            return true;
+        if (sublist.get(a) > sublist.get(b)) {
+            return decreasingSubsequence(sublist, b, b + 1);
+        }
+        return false;
+    }
+
+    /** Parses a text file and retrieves CostArray, Windowsize and Number of inputs
+     * Format:
+     * <pre>
+     *     10 50
+     *     100000 20000 300000
+     * </pre>
      * @throws IOException
      */
     private void parseFile() throws IOException {
         String content = new String(Files.readAllBytes(Paths.get(this.path)));
         int contentLength = content.length();
-        StringBuilder stringNumeric = new StringBuilder();
-        for (int i = 0; i < contentLength; i++) {
-            char charstr = content.charAt(i);
-            if (isWhiteSpace(charstr)) {
-                if (stringNumeric.length() > 0) {
-                    double temp = Double.parseDouble(stringNumeric.toString());
-                    CostArray.add(temp);
-                }
-                stringNumeric = new StringBuilder();
-            } else {
-                stringNumeric.append(charstr);
+        if (contentLength <= 0) {
+            System.out.println("Empty Input");
+            return;
+        }
+        String[] split = content.split("\\s");
+        StringBuilder sb = new StringBuilder();
+        for (String aSplit : split) {
+            if (!aSplit.isEmpty()) {
+                double temp = Double.parseDouble(aSplit);
+                CostArray.add(temp);
             }
         }
         this.TotalInputs_N = CostArray.get(0);
-        this.WindowSize_K = CostArray.get(1);
         CostArray.remove(0);
+        this.WindowSize_K = CostArray.get(0);
         CostArray.remove(0);
     }
 
-    /**
-     * @param c
-     * @return
-     */
-    private boolean isWhiteSpace(char c) {
-        switch (c) {
-            case '\n':
-            case '\t':
-            case ' ':
-            case '\r':
-                return true;
-
-            default:
-                return false;
-        }
-    }
-
-    /**
-     * @param listVals
+    /** Displays List of type Double.
+     *
+     * @param listVals: List<Double>
      */
     private void displayDoubleLists(List<Double> listVals) {
-        for (double d : listVals){
+        for (double d : listVals) {
             System.out.println(d);
         }
     }
@@ -97,6 +121,10 @@ public class TrendRecog {
      */
     public void beginAnalysis() throws IOException {
         parseFile();
+        if (WindowSize_K <= 1 || TotalInputs_N <= 1 || WindowSize_K >= TotalInputs_N || TotalInputs_N >= 20000) {
+            System.out.println("Invalid input");
+            return;
+        }
         generatePattern();
         displayDoubleLists(WindowResults);
     }
