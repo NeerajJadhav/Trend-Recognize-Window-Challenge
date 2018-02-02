@@ -77,12 +77,14 @@ public class TrendRecog {
         return false;
     }
 
-    /** Parses a text file and retrieves CostArray, Windowsize and Number of inputs
+    /**
+     * Parses a text file and retrieves CostArray, Windowsize and Number of inputs
      * Format:
      * <pre>
      *     10 50
      *     100000 20000 300000
      * </pre>
+     *
      * @throws IOException
      */
     private void parseFile() throws IOException {
@@ -106,7 +108,8 @@ public class TrendRecog {
         CostArray.remove(0);
     }
 
-    /** Displays List of type Double.
+    /**
+     * Displays List of type Double.
      *
      * @param listVals: List<Double>
      */
